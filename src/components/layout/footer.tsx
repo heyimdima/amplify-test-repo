@@ -14,7 +14,7 @@ export function Footer() {
               </p>
             </div>
 
-            <div className="space-y-4 text-center">
+            {/* <div className="space-y-4 text-center">
               <h4 className="text-sm font-medium">Company</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
@@ -59,7 +59,7 @@ export function Footer() {
                   </Link>
                 </li>
               </ul>
-            </div>
+            </div> */}
           </div>
 
           <div className="mt-8 pt-8 border-t">
