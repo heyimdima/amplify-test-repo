@@ -1,4 +1,4 @@
-import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -7,11 +7,31 @@ specifies that any unauthenticated user can "create", "read", "update",
 and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
-  Todo: a
+  Poll: a
     .model({
-      content: a.string(),
+      question: a.string().required(),
+      expiresAt: a.datetime(),
+      options: a.hasMany("Option", "pollId"),
     })
-    .authorization((allow) => [allow.guest()]),
+    .authorization((allow) => [allow.publicApiKey()]),
+
+  Option: a
+    .model({
+      text: a.string().required(),
+      pollId: a.id().required(),
+      poll: a.belongsTo("Poll", "pollId"),
+      votes: a.hasMany("Vote", "optionId"),
+      voteCount: a.integer().default(0),
+    })
+    .authorization((allow) => [allow.publicApiKey()]),
+
+  Vote: a
+    .model({
+      optionId: a.id().required(),
+      option: a.belongsTo("Option", "optionId"),
+      voterIdentifier: a.string().required(), // email or user id to prevent duplicate votes
+    })
+    .authorization((allow) => [allow.publicApiKey()]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -19,7 +39,7 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'identityPool',
+    defaultAuthorizationMode: "apiKey",
   },
 });
 
