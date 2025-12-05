@@ -39,7 +39,9 @@ export default function Create() {
   }, []);
 
   const addOption = () => {
-    setOptions([...options, ""]);
+    if (options.length < 10) {
+      setOptions([...options, ""]);
+    }
   };
 
   const removeOption = (index: number) => {
@@ -111,8 +113,8 @@ export default function Create() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="max-w-2xl mx-auto">
+    <div className="container mx-auto px-4 py-12 flex-1 flex items-center">
+      <div className="max-w-2xl mx-auto w-full">
         <Card>
           <CardHeader>
             <CardTitle>Create a New Poll</CardTitle>
@@ -158,9 +160,10 @@ export default function Create() {
                   type="button"
                   variant="outline"
                   onClick={addOption}
+                  disabled={options.length >= 10}
                   className="w-full">
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Option
+                  {options.length >= 10 ? "Maximum 10 options" : "Add Option"}
                 </Button>
               </div>
 

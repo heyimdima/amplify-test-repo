@@ -18,7 +18,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts";
 
 export default function PollPage() {
   const params = useParams();
@@ -218,7 +218,7 @@ export default function PollPage() {
   const chartData = options.map((option, index) => ({
     name: option.text || "",
     votes: option.voteCount || 0,
-    fill: `hsl(var(--chart-${(index % 5) + 1}))`,
+    fill: `var(--chart-${(index % 10) + 1})`,
   }));
 
   const chartConfig = {
@@ -260,7 +260,11 @@ export default function PollPage() {
                   allowDecimals={false}
                 />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="votes" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="votes" radius={[8, 8, 0, 0]}>
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Bar>
               </BarChart>
             </ChartContainer>
 
@@ -311,7 +315,7 @@ export default function PollPage() {
                         className="h-2 rounded-full transition-all duration-500"
                         style={{
                           width: `${percentage}%`,
-                          backgroundColor: `hsl(var(--chart-${(index % 5) + 1}))`,
+                          backgroundColor: `var(--chart-${(index % 10) + 1})`,
                         }}
                       />
                     </div>
