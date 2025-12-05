@@ -9,7 +9,7 @@ export function Navbar() {
         <div className="flex h-16 items-center justify-between">
           <Link href="/">
             <span className="text-xl font-bold hover:opacity-80 transition-opacity">
-              Quick Poll
+              quickpoll.live
             </span>
           </Link>
 
