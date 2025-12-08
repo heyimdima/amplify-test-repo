@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { client } from "@/lib/amplify";
 import type { Schema } from "../../../../amplify/data/resource";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -12,13 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Check } from "lucide-react";
 
 export default function PollPage() {
   const params = useParams();
@@ -28,6 +22,7 @@ export default function PollPage() {
   const [error, setError] = useState<string | null>(null);
   const [voting, setVoting] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
+  const [votedOptionId, setVotedOptionId] = useState<string | null>(null);
   const [isExpired, setIsExpired] = useState(false);
 
   // Fetch poll data on mount
@@ -51,7 +46,9 @@ export default function PollPage() {
         // Options will be loaded by the observeQuery subscription
         // Check localStorage to see if user has already voted
         const voted = localStorage.getItem(`voted_${pollId}`) === "true";
+        const votedOption = localStorage.getItem(`voted_option_${pollId}`);
         setHasVoted(voted);
+        setVotedOptionId(votedOption);
 
         setLoading(false);
       } catch (err) {
@@ -69,7 +66,7 @@ export default function PollPage() {
     const pollId = params.id as string;
     if (!pollId) return;
 
-    console.log(`🔌 Setting up real-time subscription for poll ID: ${pollId}`);
+    // console.log(`🔌 Setting up real-time subscription for poll ID: ${pollId}`);
 
     const subscription = client.models.Option.observeQuery({
       filter: {
@@ -77,8 +74,13 @@ export default function PollPage() {
       },
     }).subscribe({
       next: ({ items }) => {
-        console.log("📡 Received options update:", items.length, "options");
-        setOptions([...items]);
+        // console.log("📡 Received options update:", items.length, "options");
+        // Sort by createdAt to maintain creation order
+        const sorted = [...items].sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+        setOptions(sorted);
       },
       error: (error) => {
         console.error("❌ Subscription error:", error);
@@ -86,7 +88,7 @@ export default function PollPage() {
     });
 
     return () => {
-      console.log(`🔌 Unsubscribing from poll ID: ${pollId}`);
+      // console.log(`🔌 Unsubscribing from poll ID: ${pollId}`);
       subscription.unsubscribe();
     };
   }, [params.id]);
@@ -101,7 +103,7 @@ export default function PollPage() {
 
       if (now >= expirationDate) {
         setIsExpired(true);
-        console.log("⏰ Poll has expired");
+        // console.log("⏰ Poll has expired");
       }
     };
 
@@ -119,7 +121,7 @@ export default function PollPage() {
 
     setVoting(true);
     const pollId = params.id as string;
-    console.log(`🗳️  Voting for option ${optionId} on poll ${pollId}`);
+    // console.log(`🗳️  Voting for option ${optionId} on poll ${pollId}`);
 
     try {
       // Check if poll has expired
@@ -150,7 +152,7 @@ export default function PollPage() {
       });
 
       if (voteErrors) {
-        console.error("Error creating vote:", voteErrors);
+        // console.error("Error creating vote:", voteErrors);
         setError("Failed to record vote");
         setVoting(false);
         return;
@@ -169,10 +171,12 @@ export default function PollPage() {
         return;
       }
 
-      console.log("✅ Vote submitted successfully!");
+      // console.log("✅ Vote submitted successfully!");
       setHasVoted(true);
+      setVotedOptionId(optionId);
       // Store in localStorage to prevent double voting
       localStorage.setItem(`voted_${pollId}`, "true");
+      localStorage.setItem(`voted_option_${pollId}`, optionId);
       // The observeQuery subscription will update the UI automatically
     } catch (error) {
       console.error("❌ Failed to vote:", error);
@@ -185,8 +189,31 @@ export default function PollPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-12">
-        <div className="max-w-3xl mx-auto text-center">
-          <p className="text-muted-foreground">Loading poll...</p>
+        <div className="max-w-3xl mx-auto space-y-6">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-8 w-3/4" />
+              <Skeleton className="h-4 w-24 mt-2" />
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <Skeleton className="h-4 w-48" />
+              <div className="space-y-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="space-y-2 p-3 rounded-lg border">
+                    <div className="flex justify-between">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-4 w-20" />
+                    </div>
+                    <Skeleton className="h-2 w-full rounded-full" />
+                  </div>
+                ))}
+              </div>
+              <div className="pt-4 border-t space-y-2">
+                <Skeleton className="h-3 w-48" />
+                <Skeleton className="h-3 w-40" />
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -214,19 +241,6 @@ export default function PollPage() {
     0
   );
 
-  // Prepare chart data
-  const chartData = options.map((option, index) => ({
-    name: option.text || "",
-    votes: option.voteCount || 0,
-    fill: `var(--chart-${(index % 10) + 1})`,
-  }));
-
-  const chartConfig = {
-    votes: {
-      label: "Votes",
-    },
-  } satisfies ChartConfig;
-
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-3xl mx-auto space-y-6">
@@ -239,61 +253,24 @@ export default function PollPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Chart Visualization */}
-            <ChartContainer
-              config={chartConfig}
-              className="min-h-[300px] w-full">
-              <BarChart
-                data={chartData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="name"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  allowDecimals={false}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="votes" radius={[8, 8, 0, 0]}>
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ChartContainer>
-
-            {/* Voting Buttons (only show if not expired and not voted) */}
+            {/* Voting Status Message */}
             {!isExpired && !hasVoted && (
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Cast your vote:</p>
-                <div className="grid gap-2">
-                  {options.map((option) => (
-                    <Button
-                      key={option.id}
-                      variant="outline"
-                      className="justify-start h-auto py-3"
-                      onClick={() => handleVote(option.id)}
-                      disabled={voting}>
-                      {option.text || ""}
-                    </Button>
-                  ))}
-                </div>
-              </div>
+              <p className="text-sm text-muted-foreground">
+                Click an option to cast your vote
+              </p>
             )}
-
             {hasVoted && (
-              <div className="text-center text-sm text-muted-foreground bg-secondary/50 py-2 rounded">
+              <div className="text-sm text-muted-foreground bg-secondary/50 py-2 px-3 rounded">
                 Thanks for voting! Results update in real-time.
               </div>
             )}
+            {isExpired && (
+              <p className="text-sm text-muted-foreground">
+                This poll has closed
+              </p>
+            )}
 
-            {/* Options List with Progress Bars */}
+            {/* Interactive Options with Progress Bars */}
             <div className="space-y-3">
               {options.map((option, index) => {
                 const voteCount = option.voteCount || 0;
@@ -302,24 +279,45 @@ export default function PollPage() {
                     ? ((voteCount / totalVotes) * 100).toFixed(1)
                     : "0.0";
 
+                const canVote = !isExpired && !hasVoted && !voting;
+                const isVotedOption = votedOptionId === option.id;
+
                 return (
-                  <div key={option.id} className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="font-medium">{option.text || ""}</span>
-                      <span className="text-muted-foreground">
-                        {voteCount} ({percentage}%)
+                  <button
+                    key={option.id}
+                    onClick={() => canVote && handleVote(option.id)}
+                    disabled={!canVote}
+                    className={`w-full text-left space-y-2 p-3 rounded-lg border transition-all ${
+                      canVote
+                        ? "hover:bg-secondary/50 hover:border-primary cursor-pointer"
+                        : "cursor-default"
+                    }`}>
+                    <div className="flex justify-between text-sm gap-2">
+                      <span className="font-medium warp-break-words">
+                        {option.text || ""}
                       </span>
+                      <div className="flex flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-2 shrink-0">
+                        {isVotedOption && (
+                          <span className="flex items-center gap-1 text-muted-foreground text-xs">
+                            <Check className="h-3 w-3" />
+                            Your vote
+                          </span>
+                        )}
+                        <span className="text-muted-foreground whitespace-nowrap">
+                          {voteCount} ({percentage}%)
+                        </span>
+                      </div>
                     </div>
                     <div className="w-full bg-secondary rounded-full h-2">
                       <div
-                        className="h-2 rounded-full transition-all duration-500"
+                        className="h-2 rounded-full transition-all duration-300"
                         style={{
                           width: `${percentage}%`,
                           backgroundColor: `var(--chart-${(index % 10) + 1})`,
                         }}
                       />
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
