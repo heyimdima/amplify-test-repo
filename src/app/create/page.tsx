@@ -21,6 +21,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Plus, X, CalendarIcon } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { format } from "date-fns";
 
 export default function Create() {
@@ -113,7 +114,7 @@ export default function Create() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 flex-1 flex items-center">
+    <div className="container mx-auto px-4 py-8 sm:py-12 flex-1 flex sm:items-center">
       <div className="max-w-2xl mx-auto w-full">
         <Card>
           <CardHeader>
@@ -247,6 +248,7 @@ export default function Create() {
                 className="w-full"
                 size="lg"
                 disabled={isSubmitting}>
+                {isSubmitting && <Spinner />}
                 {isSubmitting ? "Creating..." : "Create Poll"}
               </Button>
             </form>
