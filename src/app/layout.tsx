@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Quick Poll - Create and Share Polls Instantly with Real-Time Results",
-  description: "Quick Poll makes it easy to create polls, share them with anyone, and see results update in real-time. No signup required. Create free polls for decisions, surveys, voting, and feedback collection in seconds.",
+  title: "Quick Poll - Create and Share Polls Instantly",
+  description: "Create free polls in seconds and share them with anyone. Real-time results, no signup required. Perfect for decisions, surveys, and voting.",
   icons: {
     icon: [
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
