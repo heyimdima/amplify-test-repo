@@ -88,7 +88,7 @@ export default function Create() {
         return;
       }
 
-      console.log("Poll created successfully:", poll.id);
+      // console.log("Poll created successfully:", poll.id);
 
       // Step 2: Create all Options
       for (const optionText of validOptions) {
@@ -103,8 +103,8 @@ export default function Create() {
         }
       }
 
-      console.log("Options created successfully!");
-      console.log("Redirecting to the poll link");
+      // console.log("Options created successfully!");
+      // console.log("Redirecting to the poll link");
 
       router.push(`/poll/${poll.id}`);
     } catch (error) {
