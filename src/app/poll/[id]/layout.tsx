@@ -16,9 +16,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     if (!poll) {
       return {
-        title: "Poll Not Found - Quick Poll",
+        title: "Poll Not Found | Quick Poll",
         description:
-          "This poll could not be found. Create your own free poll with Quick Poll - instant setup, real-time results, no signup required.",
+          "This poll could not be found. Create your own free poll with real-time results and no signup required.",
       };
     }
 
@@ -34,8 +34,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     );
 
     // Create a descriptive title and meta description
-    const title = `${poll.question} - Vote Now on Quick Poll`;
-    const description = `Cast your vote on "${poll.question}" - ${optionsCount} options available. ${totalVotes || 0} votes so far. See real-time results as votes come in. Free poll by Quick Poll.`;
+    // Truncate question if too long (keep under 60 chars for SEO)
+    const truncatedQuestion = poll.question.length > 50
+      ? poll.question.substring(0, 50) + "..."
+      : poll.question;
+
+    const title = `${truncatedQuestion} | Quick Poll`;
+    const description = `Vote on "${truncatedQuestion}" with ${optionsCount} options. ${totalVotes || 0} votes cast. Real-time results, no signup required.`;
 
     return {
       title,
@@ -54,9 +59,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   } catch (error) {
     // Fallback metadata if fetch fails
     return {
-      title: "Vote on Poll - Quick Poll",
+      title: "Vote on Poll | Quick Poll",
       description:
-        "Cast your vote and see real-time results. Quick Poll makes it easy to create and share polls with instant voting and live updates.",
+        "Cast your vote and see real-time results. Create and share polls with instant voting and live updates.",
     };
   }
 }
